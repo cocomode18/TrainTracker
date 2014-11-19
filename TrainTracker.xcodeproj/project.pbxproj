@@ -14,6 +14,10 @@
 		C1AACA8C1A183BCD0058D4FB /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C1AACA8B1A183BCD0058D4FB /* Images.xcassets */; };
 		C1AACA8F1A183BCD0058D4FB /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = C1AACA8D1A183BCD0058D4FB /* LaunchScreen.xib */; };
 		C1AACA9B1A183BCD0058D4FB /* TrainTrackerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C1AACA9A1A183BCD0058D4FB /* TrainTrackerTests.m */; };
+		C1AACAA51A183C1C0058D4FB /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C1AACAA41A183C1C0058D4FB /* CoreLocation.framework */; };
+		C1AACAA81A183C4A0058D4FB /* LocationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C1AACAA71A183C4A0058D4FB /* LocationViewController.m */; };
+		C1AACAAE1A18530F0058D4FB /* DataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C1AACAAD1A18530F0058D4FB /* DataManager.m */; };
+		C1AACAB11A1859680058D4FB /* TrackingData.m in Sources */ = {isa = PBXBuildFile; fileRef = C1AACAB01A1859680058D4FB /* TrackingData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +44,13 @@
 		C1AACA941A183BCD0058D4FB /* TrainTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrainTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1AACA991A183BCD0058D4FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C1AACA9A1A183BCD0058D4FB /* TrainTrackerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrainTrackerTests.m; sourceTree = "<group>"; };
+		C1AACAA41A183C1C0058D4FB /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		C1AACAA61A183C4A0058D4FB /* LocationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationViewController.h; sourceTree = "<group>"; };
+		C1AACAA71A183C4A0058D4FB /* LocationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocationViewController.m; sourceTree = "<group>"; };
+		C1AACAAC1A18530F0058D4FB /* DataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataManager.h; sourceTree = "<group>"; };
+		C1AACAAD1A18530F0058D4FB /* DataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataManager.m; sourceTree = "<group>"; };
+		C1AACAAF1A1859680058D4FB /* TrackingData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingData.h; sourceTree = "<group>"; };
+		C1AACAB01A1859680058D4FB /* TrackingData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TrackingData.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1AACAA51A183C1C0058D4FB /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +75,7 @@
 		C1AACA721A183BCD0058D4FB = {
 			isa = PBXGroup;
 			children = (
+				C1AACAA41A183C1C0058D4FB /* CoreLocation.framework */,
 				C1AACA7D1A183BCD0058D4FB /* TrainTracker */,
 				C1AACA971A183BCD0058D4FB /* TrainTrackerTests */,
 				C1AACA7C1A183BCD0058D4FB /* Products */,
@@ -86,9 +99,15 @@
 				C1AACA851A183BCD0058D4FB /* ViewController.h */,
 				C1AACA861A183BCD0058D4FB /* ViewController.m */,
 				C1AACA881A183BCD0058D4FB /* Main.storyboard */,
+				C1AACAA61A183C4A0058D4FB /* LocationViewController.h */,
+				C1AACAA71A183C4A0058D4FB /* LocationViewController.m */,
 				C1AACA8B1A183BCD0058D4FB /* Images.xcassets */,
 				C1AACA8D1A183BCD0058D4FB /* LaunchScreen.xib */,
 				C1AACA7E1A183BCD0058D4FB /* Supporting Files */,
+				C1AACAAC1A18530F0058D4FB /* DataManager.h */,
+				C1AACAAD1A18530F0058D4FB /* DataManager.m */,
+				C1AACAAF1A1859680058D4FB /* TrackingData.h */,
+				C1AACAB01A1859680058D4FB /* TrackingData.m */,
 			);
 			path = TrainTracker;
 			sourceTree = "<group>";
@@ -219,9 +238,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1AACAAE1A18530F0058D4FB /* DataManager.m in Sources */,
 				C1AACA871A183BCD0058D4FB /* ViewController.m in Sources */,
+				C1AACAB11A1859680058D4FB /* TrackingData.m in Sources */,
 				C1AACA841A183BCD0058D4FB /* AppDelegate.m in Sources */,
 				C1AACA811A183BCD0058D4FB /* main.m in Sources */,
+				C1AACAA81A183C4A0058D4FB /* LocationViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,8 +368,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = TrainTracker/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "57d6cd9f-5b72-4b5f-b66e-9ef9210908af";
 			};
 			name = Debug;
 		};
@@ -356,6 +380,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = TrainTracker/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
