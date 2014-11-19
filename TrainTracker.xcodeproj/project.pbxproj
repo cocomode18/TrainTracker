@@ -439,6 +439,7 @@
 				C1AACAA01A183BCD0058D4FB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C1AACAA11A183BCD0058D4FB /* Build configuration list for PBXNativeTarget "TrainTrackerTests" */ = {
 			isa = XCConfigurationList;
@@ -447,6 +448,7 @@
 				C1AACAA31A183BCD0058D4FB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
