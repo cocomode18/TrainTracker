@@ -11,7 +11,10 @@
 
 @interface TrackingData : NSObject<NSCoding>
 
+// encode, decode メソッドに追記のこと
 @property (strong, nonatomic) CLLocation* location;
+@property (strong, nonatomic) NSString* railroadLine;
 @property (strong, nonatomic) NSString* station;
+@property (assign, nonatomic) double distanceToStation;
 
 @end
