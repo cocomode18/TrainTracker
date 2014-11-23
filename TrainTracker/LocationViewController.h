@@ -18,6 +18,7 @@
 //
 @property (assign, nonatomic) double distanceFilter;
 @property (assign, nonatomic) double distanceWithinStation;
+@property (assign, nonatomic) double trainSpeed;
 
 // 現在位置記録用
 @property (assign, nonatomic) CLLocationDegrees longitude;
@@ -32,5 +33,7 @@
 @property (weak, nonatomic) IBOutlet UISegmentedControl *significantLocationSegmentedControl;
 @property (weak, nonatomic) IBOutlet UITextField *notifyMeterTextField;
 @property (weak, nonatomic) IBOutlet UITextField *distanceWithinStationTextField;
+@property (weak, nonatomic) IBOutlet UITextField *trainSpeedTextField;
+@property (weak, nonatomic) IBOutlet UISegmentedControl *tableViewTypeSegmentedControl;
 
 @end

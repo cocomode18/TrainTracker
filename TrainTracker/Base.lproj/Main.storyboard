@@ -40,7 +40,7 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                                 <variation key="widthClass=compact" fixedFrame="YES">
-                                    <rect key="frame" x="25" y="113" width="104" height="21"/>
+                                    <rect key="frame" x="62" y="99" width="104" height="21"/>
                                 </variation>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="経度" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="93l-H8-O9N">
@@ -49,7 +49,7 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                                 <variation key="widthClass=compact" fixedFrame="YES">
-                                    <rect key="frame" x="137" y="113" width="97" height="21"/>
+                                    <rect key="frame" x="62" y="120" width="97" height="21"/>
                                 </variation>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="ログ" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="5" translatesAutoresizingMaskIntoConstraints="NO" id="ofm-Ln-Agg">
@@ -64,6 +64,17 @@
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="ttA-Ql-mId">
                                 <rect key="frame" x="23" y="112" width="535" height="454"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <segmentedControl key="tableHeaderView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" id="vdg-Nd-V5N">
+                                    <rect key="frame" x="-61" y="-14" width="123" height="29"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <segments>
+                                        <segment title="すべてのログ"/>
+                                        <segment title="駅の一覧"/>
+                                    </segments>
+                                    <connections>
+                                        <action selector="tableViewTypeSwitched:" destination="vmP-Qu-9k5" eventType="valueChanged" id="j3F-yD-CiD"/>
+                                    </connections>
+                                </segmentedControl>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LocationHistoryCell" textLabel="GiE-XR-lYJ" detailTextLabel="JFt-Yi-SEc" style="IBUITableViewCellStyleSubtitle" id="aZU-6a-EW9">
                                         <autoresizingMask key="autoresizingMask"/>
@@ -94,13 +105,26 @@
                                     <outlet property="delegate" destination="vmP-Qu-9k5" id="Q05-8c-FVL"/>
                                 </connections>
                             </tableView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLs-av-1IW">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hey-Ob-gno">
+                                <rect key="frame" x="-23" y="-15" width="46" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <state key="normal" title="ログをコンソール出力">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="224" y="126" width="150" height="30"/>
+                                </variation>
+                                <connections>
+                                    <action selector="logOutput:" destination="vmP-Qu-9k5" eventType="touchUpInside" id="ejN-HT-iGz"/>
+                                </connections>
+                            </button>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLs-av-1IW">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" title="再表示">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <variation key="widthClass=compact" fixedFrame="YES">
-                                    <rect key="frame" x="240" y="102" width="45" height="30"/>
+                                    <rect key="frame" x="302" y="150" width="45" height="30"/>
                                 </variation>
                                 <connections>
                                     <action selector="reloadTable:" destination="vmP-Qu-9k5" eventType="touchUpInside" id="zcg-TQ-7bx"/>
@@ -185,7 +209,7 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                                 <variation key="widthClass=compact" fixedFrame="YES">
-                                    <rect key="frame" x="188" y="67" width="51" height="21"/>
+                                    <rect key="frame" x="188" y="66" width="51" height="21"/>
                                 </variation>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="m" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hZ5-Rj-sWd">
@@ -208,23 +232,71 @@
                                     <action selector="distanceWithinStationChanged:" destination="vmP-Qu-9k5" eventType="editingDidEnd" id="tWs-Ko-Epq"/>
                                 </connections>
                             </textField>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hey-Ob-gno">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FiW-Ru-PU1">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <state key="normal" title="ログをコンソール出力">
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <state key="normal" title="駅抽出">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <variation key="widthClass=compact" fixedFrame="YES">
-                                    <rect key="frame" x="224" y="126" width="150" height="30"/>
+                                    <rect key="frame" x="241" y="150" width="45" height="30"/>
                                 </variation>
                                 <connections>
-                                    <action selector="logOutput:" destination="vmP-Qu-9k5" eventType="touchUpInside" id="ejN-HT-iGz"/>
+                                    <action selector="outputStationListTapped:" destination="vmP-Qu-9k5" eventType="touchUpInside" id="eKB-xp-zhw"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="移動速度" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rpt-wU-mgE">
+                                <rect key="frame" x="0.0" y="-21" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="179" y="95" width="68" height="21"/>
+                                </variation>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="m/s" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZOy-C6-xbm">
+                                <rect key="frame" x="0.0" y="-21" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="292" y="97" width="29" height="21"/>
+                                </variation>
+                            </label>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="10" borderStyle="roundedRect" textAlignment="right" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ghr-h5-Uqc">
+                                <rect key="frame" x="0.0" y="-30" width="97" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="236" y="97" width="50" height="30"/>
+                                </variation>
+                                <connections>
+                                    <action selector="trainSpeedChanged:" destination="vmP-Qu-9k5" eventType="editingDidEnd" id="PcT-K0-gd4"/>
+                                </connections>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="緯度" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Byo-ZR-dC8">
+                                <rect key="frame" x="0.0" y="-21" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="25" y="97" width="34" height="21"/>
+                                </variation>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="経度" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1d1-oP-GFU">
+                                <rect key="frame" x="0.0" y="-21" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                                <variation key="widthClass=compact" fixedFrame="YES">
+                                    <rect key="frame" x="25" y="121" width="34" height="21"/>
+                                </variation>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <variation key="default">
                             <mask key="subviews">
+                                <exclude reference="hey-Ob-gno"/>
                                 <exclude reference="sLs-av-1IW"/>
                                 <exclude reference="RKs-Aw-Nfc"/>
                                 <exclude reference="TgN-l6-SYw"/>
@@ -236,11 +308,17 @@
                                 <exclude reference="WnR-cg-p2v"/>
                                 <exclude reference="hZ5-Rj-sWd"/>
                                 <exclude reference="7OH-dL-WAw"/>
-                                <exclude reference="hey-Ob-gno"/>
+                                <exclude reference="FiW-Ru-PU1"/>
+                                <exclude reference="Rpt-wU-mgE"/>
+                                <exclude reference="ZOy-C6-xbm"/>
+                                <exclude reference="Ghr-h5-Uqc"/>
+                                <exclude reference="Byo-ZR-dC8"/>
+                                <exclude reference="1d1-oP-GFU"/>
                             </mask>
                         </variation>
                         <variation key="widthClass=compact">
                             <mask key="subviews">
+                                <include reference="hey-Ob-gno"/>
                                 <include reference="sLs-av-1IW"/>
                                 <include reference="RKs-Aw-Nfc"/>
                                 <include reference="TgN-l6-SYw"/>
@@ -252,7 +330,12 @@
                                 <include reference="WnR-cg-p2v"/>
                                 <include reference="hZ5-Rj-sWd"/>
                                 <include reference="7OH-dL-WAw"/>
-                                <include reference="hey-Ob-gno"/>
+                                <include reference="FiW-Ru-PU1"/>
+                                <include reference="Rpt-wU-mgE"/>
+                                <include reference="ZOy-C6-xbm"/>
+                                <include reference="Ghr-h5-Uqc"/>
+                                <include reference="Byo-ZR-dC8"/>
+                                <include reference="1d1-oP-GFU"/>
                             </mask>
                         </variation>
                     </view>
@@ -265,11 +348,13 @@
                         <outlet property="normalLocationSegmentedControl" destination="I8F-7E-pc4" id="LyK-3i-Erp"/>
                         <outlet property="notifyMeterTextField" destination="azn-B8-sag" id="ccn-5S-d75"/>
                         <outlet property="significantLocationSegmentedControl" destination="VBa-JJ-4Yd" id="s0t-JQ-q1B"/>
+                        <outlet property="tableViewTypeSegmentedControl" destination="vdg-Nd-V5N" id="jdA-o6-HwM"/>
+                        <outlet property="trainSpeedTextField" destination="Ghr-h5-Uqc" id="9mD-tJ-Ges"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HtO-rC-u90" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1032" y="126"/>
+            <point key="canvasLocation" x="1105.5" y="126"/>
         </scene>
     </scenes>
 </document>
