@@ -39,41 +39,30 @@ enum {
 	// ロケーションマネージャーを作成
 	self.locationManager = [[CLLocationManager alloc] init];
 
-	if ([CLLocationManager locationServicesEnabled]) {
-		// 位置情報取得開始
+	if ([CLLocationManager locationServicesEnabled] &&
+	    [CLLocationManager significantLocationChangeMonitoringAvailable]) {
+		//まずdelegateをセット(これによって -locationManager: didChangeAuthorizationStatus: メソッドが呼びだされる
+		self.locationManager.delegate = self;
+
+		//iOS8の場合、許可要求のアラートを明示的に呼び出す必要あり
 		if ([[UIDevice currentDevice] systemVersion].floatValue >= 8.0) {
-			//[self.locationManager requestAlwaysAuthorization];
-			[self.locationManager startUpdatingLocation];
-			self.locationManager.delegate = self;
+			//「常に使用を許可」でない場合、許可を求める
+			if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorizedAlways) {
+				[self.locationManager requestAlwaysAuthorization];
+			}
 		}
+		//開始(iOS7以前の場合、start系メソッドを呼ぶことによって許可要求のアラートが出る)
 		else {
-            //位置情報サービスの開始
-            if ([CLLocationManager locationServicesEnabled]) {
-                [self.locationManager startUpdatingLocation];
-                self.normalLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
-            }
-            else{
-                [[[UIAlertView alloc]initWithTitle:@"" message:@"この端末では位置情報サービスを使用することができません" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
-            }
-            
-            //大幅変更位置情報サービスの開始。これが実行されていると、アプリが終了していてもバックグラウンドで自動的に起動する
-            if ([CLLocationManager significantLocationChangeMonitoringAvailable]) {
-                [self.locationManager startMonitoringSignificantLocationChanges];
-                self.significantLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
-            }
-            else{
-                [[[UIAlertView alloc]initWithTitle:@"" message:@"この端末では大幅変更位置情報サービスを使用することができません" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
-            }
-
-            //その他設定
-            self.locationManager.delegate = self;
-			self.locationManager.distanceFilter = self.distanceFilter;
-
-            //viewの設定
-            self.distanceWithinStationTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceWithinStation];
+			[self startLocation];
 		}
-		NSLog(@"start");
+
+		//開始処理は -locationManager: didChangeAuthorizationStatus: から[self startLocation]を呼び出すことによって行う。
+        //iOS7以前ですでに許可済みの場合だけ、2重に[self startLocation]が実行されることになるが、多重呼び出し可能にしてあるので問題無し
 	}
+	else {
+        //このアプリが使えない
+		[[[UIAlertView alloc]initWithTitle:@"" message:@"この端末では位置情報サービスを使用することができません" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -95,34 +84,18 @@ enum {
 
 #pragma mark - location delegate methods
 
+/**
+ * 位置情報サービスの許可状態が変更されたときに呼び出される
+ */
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-	NSString *string;
-	switch (status) {
-		case kCLAuthorizationStatusAuthorizedAlways:
-			string = @"常に許可";
-			break;
+	//NSLog(@"%@", [self getAuthorizationString:status]);
 
-		case kCLAuthorizationStatusAuthorizedWhenInUse:
-			string = @"使用時のみ許可";
-			break;
-
-		case kCLAuthorizationStatusDenied:
-			string = @"不許可";
-			break;
-
-		case kCLAuthorizationStatusNotDetermined:
-			string = @"未設定";
-			break;
-
-		case kCLAuthorizationStatusRestricted:
-			string = @"限定的";
-			break;
-
-		default:
-			string = @"その他";
-			break;
+	if (status == kCLAuthorizationStatusAuthorizedAlways) {
+		[self startLocation];
 	}
-	NSLog(@"%@", string);
+	else if (status == kCLAuthorizationStatusDenied) {
+		[self stopLocation];
+	}
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
@@ -145,7 +118,7 @@ enum {
 			// アプリでの位置情報サービスが許可されていない場合
 			case kCLErrorDenied:
 				// 位置情報取得停止
-				[self.locationManager stopUpdatingLocation];
+				[self stopLocation];
 				message = [NSString stringWithFormat:@"このアプリは位置情報サービスが許可されていません。"];
 				break;
 
@@ -163,6 +136,28 @@ enum {
 }
 
 #pragma mark - location
+
+/**
+ * CLLocationManagerの位置情報サービス取得を開始する
+ * 複数回呼んでもよいようにしておく(iOSバージョンによって呼び出しタイミングが変化するため)
+ */
+- (void)startLocation {
+	[self.locationManager startUpdatingLocation];
+	[self.locationManager startMonitoringSignificantLocationChanges];
+
+	self.locationManager.distanceFilter = self.distanceFilter;
+
+	//viewの設定
+	self.notifyMeterTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceFilter];
+	self.distanceWithinStationTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceWithinStation];
+	self.normalLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
+	self.significantLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
+}
+
+- (void)stopLocation {
+	[self.locationManager stopUpdatingLocation];
+	[self.locationManager stopMonitoringSignificantLocationChanges];
+}
 
 - (void)processWithLocations:(NSArray *)locations {
 	CLLocation *recentLocation = locations.lastObject;
@@ -192,17 +187,42 @@ enum {
 
 		NSLog(@"%@", [loc description]);
 	}
-	//TrackingData* data = [[TrackingData alloc]init];
-	//data.location = recentLocation;
-	//data.station = @"無名";
-
-	//[self.trackingDatas addObject:data];
 
 	[self.historyTableView reloadData];
 }
 
 - (BOOL)isInStation:(TrackingData *)trackingData {
 	return trackingData.station && trackingData.distanceToStation <= self.distanceWithinStation;
+}
+
+- (NSString *)getAuthorizationString:(CLAuthorizationStatus)status {
+	NSString *string;
+	switch (status) {
+		case kCLAuthorizationStatusAuthorizedAlways:
+			string = @"常に許可";
+			break;
+
+		case kCLAuthorizationStatusAuthorizedWhenInUse:
+			string = @"使用時のみ許可";
+			break;
+
+		case kCLAuthorizationStatusDenied:
+			string = @"不許可";
+			break;
+
+		case kCLAuthorizationStatusNotDetermined:
+			string = @"未設定";
+			break;
+
+		case kCLAuthorizationStatusRestricted:
+			string = @"限定的";
+			break;
+
+		default:
+			string = @"その他";
+			break;
+	}
+	return string;
 }
 
 #pragma mark - api call
