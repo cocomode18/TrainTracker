@@ -47,12 +47,30 @@ enum {
 			self.locationManager.delegate = self;
 		}
 		else {
-			[self.locationManager startUpdatingLocation];
-			self.locationManager.delegate = self;
-			self.normalLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
+            //位置情報サービスの開始
+            if ([CLLocationManager locationServicesEnabled]) {
+                [self.locationManager startUpdatingLocation];
+                self.normalLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
+            }
+            else{
+                [[[UIAlertView alloc]initWithTitle:@"" message:@"この端末では位置情報サービスを使用することができません" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
+            }
+            
+            //大幅変更位置情報サービスの開始。これが実行されていると、アプリが終了していてもバックグラウンドで自動的に起動する
+            if ([CLLocationManager significantLocationChangeMonitoringAvailable]) {
+                [self.locationManager startMonitoringSignificantLocationChanges];
+                self.significantLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
+            }
+            else{
+                [[[UIAlertView alloc]initWithTitle:@"" message:@"この端末では大幅変更位置情報サービスを使用することができません" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
+            }
 
+            //その他設定
+            self.locationManager.delegate = self;
 			self.locationManager.distanceFilter = self.distanceFilter;
-			self.distanceWithinStationTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceWithinStation];
+
+            //viewの設定
+            self.distanceWithinStationTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceWithinStation];
 		}
 		NSLog(@"start");
 	}
@@ -75,7 +93,7 @@ enum {
 	NSLog(@"%s", __func__);
 }
 
-#pragma mark - delegate methods
+#pragma mark - location delegate methods
 
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
 	NSString *string;
