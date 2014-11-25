@@ -9,19 +9,25 @@
 #import "LocationViewController.h"
 #import "TrackingData.h"
 
-#define DEFAULT_DISTANCE_WITHIN_STATION (100.0) //unit: meter
-#define DEFAULT_DISTANCE_FILTER          (10.0) //unit: meter
-#define DEFAULT_TRAIN_SPEED              (10.0) //unit: meter/sec
+#define DEFAULT_DISTANCE_WITHIN_STATION (30.0) //unit: meter
+#define DEFAULT_DISTANCE_FILTER         (10.0) //unit: meter
+#define DEFAULT_TRAIN_SPEED             (5.0)  //unit: meter/sec
 
 enum {
 	SegmentedControlIndexOn = 0,
 	SegmentedControlIndexOff = 1,
 };
 
+enum {
+	TableViewTypeLocation = 0,
+	TableViewTypeStation = 1,
+};
+
 @interface LocationViewController ()
 
-@property (weak, nonatomic) NSMutableArray *trackingDatas;
-@property (strong, nonatomic) NSMutableArray *stationDatas;
+@property (weak, nonatomic) NSMutableArray *trackingDatas; //位置情報の記録
+@property (strong, nonatomic) NSMutableArray *stationList; //駅一覧
+@property (strong, nonatomic) NSMutableArray *stationOfRideList; //乗車ごとの駅一覧（二次元配列で保持）
 
 @property (strong, nonatomic) NSDateFormatter *formatter;
 
@@ -35,10 +41,12 @@ enum {
 
 	self.distanceFilter = DEFAULT_DISTANCE_FILTER;
 	self.distanceWithinStation = DEFAULT_DISTANCE_WITHIN_STATION;
-    self.trainSpeed = DEFAULT_TRAIN_SPEED;
-    
+	self.trainSpeed = DEFAULT_TRAIN_SPEED;
+
 	self.trackingDatas = [DataManager sharedManager].trackingDatas;
-	self.stationDatas = [@[] mutableCopy];
+	self.stationOfRideList = [@[] mutableCopy];
+	self.stationList = [@[] mutableCopy];
+
 	self.formatter = [[NSDateFormatter alloc]init];
 	[self.formatter setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
 
@@ -112,6 +120,7 @@ enum {
 //iOS6より前
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
 	[self processWithLocations:@[oldLocation, newLocation]];
+	self.descLabel.text = @"正常に更新...";
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
@@ -156,7 +165,7 @@ enum {
 	//viewの設定
 	self.notifyMeterTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceFilter];
 	self.distanceWithinStationTextField.text = [NSString stringWithFormat:@"%d", (int)self.distanceWithinStation];
-    self.trainSpeedTextField.text = [NSString stringWithFormat:@"%d", (int)self.trainSpeed];
+	self.trainSpeedTextField.text = [NSString stringWithFormat:@"%d", (int)self.trainSpeed];
 	self.normalLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
 	self.significantLocationSegmentedControl.selectedSegmentIndex = SegmentedControlIndexOn;
 }
@@ -237,7 +246,7 @@ enum {
 
 	//そのうち、電車移動と見なせる駅だけを抽出
 	//・十分短い時間で移動していること
-	//（隣接駅であることは必須でない。銀座線と半蔵門線の並走区間など）
+	//（隣接駅であることは必須でない。並走する別路線も検知されるので）
 	//（前後の駅からの距離の和が著しく大きくなったとき？）
 	for (int i = 0; i < (int)stationList.count - 1; ++i) {
 		NSMutableDictionary *beforeStationInfo = stationList[i];
@@ -252,6 +261,8 @@ enum {
 		}
 	}
 
+	//選ばれた
+
 	//乗車した駅一覧を生成
 	NSMutableArray *rideAllStationList = [@[] mutableCopy]; //乗車したすべての経由駅一覧
 	NSMutableArray *rideThisStationList = [@[] mutableCopy]; //一度の乗車での経由駅一覧
@@ -261,8 +272,8 @@ enum {
 		}
 		else {
 			if (rideThisStationList.count > 0) {
-                [rideThisStationList addObject:stationInfo]; //これが降車駅
-                
+				[rideThisStationList addObject:stationInfo]; //これが降車駅
+
 				[rideAllStationList addObject:rideThisStationList]; //今回の乗車記録を追加
 				rideThisStationList = [@[] mutableCopy]; //新たな乗車記録を開始
 			}
@@ -273,15 +284,24 @@ enum {
 		rideThisStationList = [@[] mutableCopy];
 	}
 
-    self.stationDatas = rideAllStationList;
-    return self.stationDatas;
+	self.stationList = stationList;
+	self.stationOfRideList = rideAllStationList;
+	return self.stationOfRideList;
 }
 
 - (void)outputAllStationList:(NSArray *)allStationList {
-	for (NSArray *stationList in allStationList) {
+	NSLog(@"STATION_LIST###########################");
+	for (NSDictionary *stationInfo in allStationList) {
+		NSLog(@"%@", [self getStationDescription:stationInfo]);
+	}
+}
+
+- (void)outputAllStationOfRideList:(NSArray *)allStationListOfRide {
+	NSLog(@"STATION_OF_RIDE_LIST(within_station=%f, train_speed=%f)###########################", self.distanceWithinStation, self.trainSpeed);
+	for (NSArray *stationList in allStationListOfRide) {
 		NSLog(@"-------------------------");
 		for (NSDictionary *stationInfo in stationList) {
-            NSLog(@"%@", [self getStationDescription:stationInfo]);
+			NSLog(@"%@", [self getStationDescription:stationInfo]);
 		}
 	}
 	NSLog(@"-------------------------");
@@ -367,40 +387,40 @@ enum {
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if ([self isTableViewTypeHistory]) {
-        return self.trackingDatas.count;
-    }
-    else{
-        return self.stationDatas.count;
-    }
+	if ([self isTableViewTypeLocation]) {
+		return self.trackingDatas.count;
+	}
+	else {
+		return self.stationList.count;
+	}
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LocationHistoryCell"];
 
-    if ([self isTableViewTypeHistory]) {
-        NSInteger index = self.trackingDatas.count - indexPath.row  - 1;
-        TrackingData *trackingData = (TrackingData *)self.trackingDatas[index];
-        cell.textLabel.text = [self getMainDescription:trackingData];
-        cell.detailTextLabel.text = [self getSubDescription:trackingData];
-        
-        //駅にいたら色付ける
-        UIColor *textColor = [self isInStation:trackingData] ? [UIColor redColor] : [UIColor blackColor];
-        cell.textLabel.textColor = textColor;
-    }
-    else{
-        NSInteger index = self.stationDatas.count - indexPath.row  - 1;
-        NSDictionary* stationInfo = self.stationDatas[index];
-        cell.textLabel.text = [self getStationDescription:stationInfo];
-        cell.detailTextLabel.text = @"";
-        cell.textLabel.textColor = [UIColor blackColor];
-    }
+	if ([self isTableViewTypeLocation]) {
+		NSInteger index = self.trackingDatas.count - indexPath.row  - 1;
+		TrackingData *trackingData = (TrackingData *)self.trackingDatas[index];
+		cell.textLabel.text = [self getMainDescription:trackingData];
+		cell.detailTextLabel.text = [self getSubDescription:trackingData];
+
+		//駅にいたら色付ける
+		UIColor *textColor = [self isInStation:trackingData] ? [UIColor redColor] : [UIColor blackColor];
+		cell.textLabel.textColor = textColor;
+	}
+	else {
+		NSInteger index = self.stationList.count - indexPath.row  - 1;
+		NSDictionary *stationInfo = self.stationList[index];
+		cell.textLabel.text = [self getStationDescription:stationInfo];
+		cell.detailTextLabel.text = @"";
+		cell.textLabel.textColor = [UIColor blackColor];
+	}
 
 	return cell;
 }
 
--(BOOL)isTableViewTypeHistory{
-    return self.tableViewTypeSegmentedControl.selectedSegmentIndex == 0;
+- (BOOL)isTableViewTypeLocation {
+	return self.tableViewTypeSegmentedControl.selectedSegmentIndex == TableViewTypeLocation;
 }
 
 #pragma mark - console
@@ -420,21 +440,27 @@ enum {
 	        trackingData.location.verticalAccuracy];
 }
 
-- (NSString*)getStationDescription:(NSDictionary*)stationInfo{
-    return [NSString stringWithFormat: @"%@駅 (%@ - %@)",
-            stationInfo[@"station"],
-            [self.formatter stringFromDate:((CLLocation *)stationInfo[@"inCLLocation"]).timestamp],
-            [self.formatter stringFromDate:((CLLocation *)stationInfo[@"outCLLocation"]).timestamp]
-            ];
+- (NSString *)getStationDescription:(NSDictionary *)stationInfo {
+	return [NSString stringWithFormat:@"%@駅 (%@ - %@)",
+	        stationInfo[@"station"],
+	        [self.formatter stringFromDate:((CLLocation *)stationInfo[@"inCLLocation"]).timestamp],
+	        [self.formatter stringFromDate:((CLLocation *)stationInfo[@"outCLLocation"]).timestamp]
+	];
 }
 
 #pragma mark - IBAction
 
 - (IBAction)logOutput:(id)sender {
-	for (TrackingData *data in self.trackingDatas) {
-		NSLog(@"%@ %@",
-		      [self getMainDescription:data],
-		      [self getSubDescription:data]);
+	if ([self isTableViewTypeLocation]) {
+		for (TrackingData *data in self.trackingDatas) {
+			NSLog(@"%@ %@",
+			      [self getMainDescription:data],
+			      [self getSubDescription:data]);
+		}
+	}
+	else {
+		[self outputAllStationList:self.stationList];
+		[self outputAllStationOfRideList:self.stationOfRideList];
 	}
 }
 
@@ -468,8 +494,11 @@ enum {
 }
 
 - (IBAction)tableViewTypeSwitched:(UISegmentedControl *)sender {
-    [self calcStationHistory:self.trackingDatas];
-    [self.historyTableView reloadData];
+	self.trackingDatas = [DataManager sharedManager].trackingDatas;
+	if (sender.selectedSegmentIndex == TableViewTypeStation) {
+		[self calcStationHistory:self.trackingDatas];
+	}
+	[self.historyTableView reloadData];
 }
 
 - (IBAction)notifyMeterChanged:(UITextField *)textField {
@@ -479,89 +508,91 @@ enum {
 }
 
 - (IBAction)distanceWithinStationChanged:(UITextField *)textField {
-    self.distanceWithinStation = textField.text.doubleValue;
+	self.distanceWithinStation = textField.text.doubleValue;
 }
+
 - (IBAction)trainSpeedChanged:(UITextField *)textField {
-    self.trainSpeed = textField.text.doubleValue;
+	self.trainSpeed = textField.text.doubleValue;
 }
 
 - (IBAction)outputStationListTapped:(UIButton *)button {
-    NSArray *list = [self calcStationHistory:[self getDummyTrackingDatas]];
-	[self outputAllStationList:list];
+	//NSArray *list = [self calcStationHistory:[self getDummyTrackingDatas]];
+	[self outputAllStationOfRideList:self.stationOfRideList];
 }
 
-- (NSMutableArray*) getDummyTrackingDatas{
-    NSMutableArray* dummyDatas = [@[] mutableCopy];
+/*
+   - (NSMutableArray *)getDummyTrackingDatas {
+    NSMutableArray *dummyDatas = [@[] mutableCopy];
 
     //スタート
     double timeInterval = [[NSDate date] timeIntervalSince1970];
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76095 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:234.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76095 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:234.0]];
     //:
     //歩き
     //:
     timeInterval += 120;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76195 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:135.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76195 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:135.0]];
     //:
     //歩いて駅に到着
     //:
     timeInterval += 180;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
     //:
     //電車を待つ
     //:
     timeInterval += 180;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
     //:
     //電車に乗る（まだ駅内）
     //:
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76395 lat:139.72825 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:35.0]];
     //:
     //電車で駅を離れる
     //:
     timeInterval += 30;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76595 lat:139.72725 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:120.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76595 lat:139.72725 timeInterval:timeInterval station:@"東十条" railload:@"東北線" distance:120.0]];
     //:電車で次の駅に近づく
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.76995 lat:139.72525 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:120.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.76995 lat:139.72525 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:120.0]];
     //:電車で次の駅に入る
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.77395 lat:139.72325 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:80.0]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.77395 lat:139.72325 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:80.0]];
     //:次の駅に到着
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.77729 lat:139.72164 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:25.5]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.77729 lat:139.72164 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:25.5]];
     //:乗り換え待ち中
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.77729 lat:139.72164 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:25.5]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.77729 lat:139.72164 timeInterval:timeInterval station:@"赤羽" railload:@"東北線" distance:25.5]];
     //:次の駅通過中
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.74455 lat:139.71890 timeInterval:timeInterval station:@"板橋" railload:@"赤羽線" distance:46.6]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.74455 lat:139.71890 timeInterval:timeInterval station:@"板橋" railload:@"赤羽線" distance:46.6]];
     //:次の駅通過中
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.74451 lat:139.71893 timeInterval:timeInterval station:@"板橋" railload:@"赤羽線" distance:46.1]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.74451 lat:139.71893 timeInterval:timeInterval station:@"板橋" railload:@"赤羽線" distance:46.1]];
     //:後者駅到着
     timeInterval += 60;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.73113 lat:139.71182 timeInterval:timeInterval station:@"池袋" railload:@"山手線" distance:37.4]];
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.73113 lat:139.71182 timeInterval:timeInterval station:@"池袋" railload:@"山手線" distance:37.4]];
     //:駅から出る
     timeInterval += 120;
-    [dummyDatas addObject: [self getDummyTrackingDataWithLon:35.73213 lat:139.71682 timeInterval:timeInterval station:@"池袋" railload:@"山手線" distance:137.4]];
-    
+    [dummyDatas addObject:[self getDummyTrackingDataWithLon:35.73213 lat:139.71682 timeInterval:timeInterval station:@"池袋" railload:@"山手線" distance:137.4]];
+
     return dummyDatas;
-}
+   }*/
 
-- (TrackingData*)getDummyTrackingDataWithLon:(double)longtitude lat:(double)latitude timeInterval:(NSTimeInterval)timeInterval station:(NSString*)station railload:(NSString*)railload distance:(double)distance{
-    TrackingData* data = [[TrackingData alloc]init];
+- (TrackingData *)getDummyTrackingDataWithLon:(double)longtitude lat:(double)latitude timeInterval:(NSTimeInterval)timeInterval station:(NSString *)station railload:(NSString *)railload distance:(double)distance {
+	TrackingData *data = [[TrackingData alloc]init];
 
-    CLLocationCoordinate2D coordinate;
-    coordinate.longitude = longtitude;
-    coordinate.latitude = latitude;
-    CLLocation* location = [[CLLocation alloc]initWithCoordinate:coordinate altitude:0.0 horizontalAccuracy:10.0 verticalAccuracy:10.0 timestamp:[NSDate dateWithTimeIntervalSince1970:timeInterval]];
+	CLLocationCoordinate2D coordinate;
+	coordinate.longitude = longtitude;
+	coordinate.latitude = latitude;
+	CLLocation *location = [[CLLocation alloc]initWithCoordinate:coordinate altitude:0.0 horizontalAccuracy:10.0 verticalAccuracy:10.0 timestamp:[NSDate dateWithTimeIntervalSince1970:timeInterval]];
 
-    data.location = location;
-    data.station = station;
-    data.railroadLine = railload;
-    data.distanceToStation = distance;
-    return data;
+	data.location = location;
+	data.station = station;
+	data.railroadLine = railload;
+	data.distanceToStation = distance;
+	return data;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -572,9 +603,9 @@ enum {
 	if (touch.view != self.distanceWithinStationTextField) {
 		[self.distanceWithinStationTextField resignFirstResponder];
 	}
-    if (touch.view != self.trainSpeedTextField) {
-        [self.trainSpeedTextField resignFirstResponder];
-    }
+	if (touch.view != self.trainSpeedTextField) {
+		[self.trainSpeedTextField resignFirstResponder];
+	}
 }
 
 /*
